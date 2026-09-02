@@ -1,0 +1,470 @@
+# Samyak constraint register — HUMAN-MAINTAINED GROUND TRUTH
+#
+# The coding agent must NEVER add, edit, or "correct" entries in this file.
+# It may only read it and write code that evaluates it.
+#
+# Every rule needs a real citation. Before the hackathon, verify each `source`
+# yourself — a judge asking "where did NPCI-ATT-01 come from?" is a moment you
+# want to win, and citing something you haven't read is how you lose it.
+#
+# severity: HARD  = solver constraint, action is impossible
+#           SOFT  = penalty term in the objective, action is discouraged
+#
+# predicate kinds: time_window | counter_cap | min_gap | requires_precondition
+#                  forbidden_when | threshold | blackout | requires_state
+#                  requires_consent
+
+version: "1.0"
+
+rules:
+
+# ─────────────────────────────────────────────────────────────
+# RAIL — NPCI / UPI Autopay
+# ─────────────────────────────────────────────────────────────
+
+  - id: NPCI-ATT-01
+    title: Max 4 attempts per mandate cycle (1 execution + 3 retries)
+    source: "NPCI UPI Autopay retry rules, stricter regime from Aug 2025"
+    severity: HARD
+    applies_to: [MANDATE_DEBIT, MANDATE_RETRY]
+    predicate:
+      kind: counter_cap
+      counter: mandate_attempts_this_cycle
+      cap: 4
+    note: >
+      The retry budget is a scarce resource to allocate across the cycle,
+      not a backoff schedule. Naive daily dunning exhausts it in 96 hours.
+
+  - id: NPCI-PDN-01
+    title: Pre-debit notification required 24-48h before every debit
+    source: "NPCI UPI Autopay operating guidelines; RBI E-Mandate Framework 2026"
+    severity: HARD
+    applies_to: [MANDATE_DEBIT, MANDATE_RETRY]
+    predicate:
+      kind: requires_precondition
+      precondition_action: PDN_SEND
+      min_lead_hours: 24
+      max_lead_hours: 48
+      exempt_when: "merchant.category in [NETC_FASTAG, RUPAY_NCMC]"
+    # exemption source: NPCI notification 23 Sep 2024 (FASTag/NCMC auto-replenishment)
+    note: >
+      This is the constraint that inverts the whole product. It forces the
+      recovery decision 24-48h BEFORE the failure. See PRD 7.4.
+
+  - id: NPCI-PDN-02
+    title: PDN requests at or after 23:50 rejected for T+1 debits
+    source: "NPCI UPI Autopay PDN cutoff; applies only when debit_date = T+1"
+    severity: HARD
+    applies_to: [PDN_SEND]
+    predicate:
+      kind: blackout
+      start: "23:50"
+      end: "00:00"
+      condition: "debit_date == T+1"
+
+  - id: NPCI-PDN-03
+    title: If PDN fails, the debit fails
+    source: "NPCI operating guidelines — PDN is a prerequisite for presentation"
+    severity: HARD
+    applies_to: [MANDATE_DEBIT]
+    predicate:
+      kind: requires_state
+      state_path: pdn.status
+      required_value: SUCCESS
+
+  - id: NPCI-MND-01
+    title: First-presentation failure auto-revokes the mandate
+    source: "NPCI guidelines on mandate registration and first presentation"
+    severity: HARD
+    applies_to: [MANDATE_RETRY]
+    predicate:
+      kind: forbidden_when
+      condition: "mandate.first_presentation_failed == true"
+    note: >
+      Not a retry problem. Branch to re-onboarding. Treating this as a retry
+      wastes every subsequent action in the cycle.
+
+  - id: NPCI-PEAK-01
+    title: Automated debits during ~10:00-13:00 face elevated technical decline
+    source: "NPCI peak-load restrictions on automated payments"
+    severity: SOFT
+    applies_to: [MANDATE_DEBIT, MANDATE_RETRY]
+    predicate:
+      kind: time_window
+      forbidden_start: "10:00"
+      forbidden_end: "13:00"
+    penalty_cost: 0.35   # relative EV multiplier penalty
+    note: >
+      Free recovery lever. Preferred slots: before 10:00, 13:00-17:00,
+      after 21:30.
+
+  - id: NPCI-MIT-01
+    title: MIT autopay permitted up to Rs 50,000; above requires CIT
+    source: "NPCI UPI Autopay MIT threshold"
+    severity: HARD
+    applies_to: [MANDATE_DEBIT, MANDATE_RETRY]
+    predicate:
+      kind: threshold
+      field: amount
+      max: 50000
+      currency: INR
+
+
+# ─────────────────────────────────────────────────────────────
+# REGULATORY — RBI
+# ─────────────────────────────────────────────────────────────
+
+  - id: RBI-EM-01
+    title: Recurring debits up to Rs 15,000 without per-cycle AFA
+    source: "RBI Digital Payments E-Mandate Framework, 2026 (21 Apr 2026)"
+    severity: HARD
+    applies_to: [MANDATE_DEBIT, MANDATE_RETRY]
+    predicate:
+      kind: threshold
+      field: amount
+      max: 15000
+      currency: INR
+      condition: "merchant.category not in [INSURANCE, MUTUAL_FUND, CREDIT_CARD_BILL]"
+      else_require_action: AFA_REAUTH
+    note: >
+      Above threshold the action is not "retry" — it is "issue re-auth flow".
+      Action rewrite, not suppression.
+
+  - id: RBI-EM-02
+    title: Rs 1 lakh no-AFA ceiling for insurance, mutual funds, credit card bills
+    source: "RBI Digital Payments E-Mandate Framework, 2026"
+    severity: HARD
+    applies_to: [MANDATE_DEBIT, MANDATE_RETRY]
+    predicate:
+      kind: threshold
+      field: amount
+      max: 100000
+      currency: INR
+      condition: "merchant.category in [INSURANCE, MUTUAL_FUND, CREDIT_CARD_BILL]"
+    note: Category-conditional override of RBI-EM-01.
+
+  - id: RBI-EM-03
+    title: Mandatory post-debit confirmation after every successful collection
+    source: "RBI Digital Payments E-Mandate Framework, 2026"
+    severity: HARD
+    applies_to: [MANDATE_DEBIT]
+    predicate:
+      kind: requires_precondition
+      appended_action: POST_DEBIT_CONFIRM
+      direction: after
+    note: >
+      Also applies in the HOLDOUT arm. The holdout must be legally correct,
+      not merely switched off. See PRD 7.10.
+
+  - id: RBI-EM-04
+    title: Customer may opt out of an individual debit or withdraw the mandate anytime
+    source: "RBI Digital Payments E-Mandate Framework, 2026"
+    severity: HARD
+    applies_to: [ALL]
+    predicate:
+      kind: requires_consent
+      consent_field: mandate_active
+      check_timing: immediately_before_dispatch
+
+  - id: RBI-FPC-01
+    title: Recovery contact permitted only 08:00-19:00
+    source: "RBI Fair Practices Code; RBI instructions to REs, 12 Aug 2022"
+    severity: HARD
+    applies_to: [SMS_SEND, WHATSAPP_SEND, VOICE_CALL, AGENT_VISIT]
+    predicate:
+      kind: time_window
+      allowed_start: "08:00"
+      allowed_end: "19:00"
+      context: regulated_collections
+    note: >
+      Contact outside this window is classified as harassment. Liability sits
+      with the regulated entity regardless of whether a bot or vendor acted.
+
+  - id: RBI-FPC-02
+    title: No third-party contact (family, employer, neighbours)
+    source: "RBI Fair Practices Code; borrower privacy directions"
+    severity: HARD
+    applies_to: [SMS_SEND, WHATSAPP_SEND, VOICE_CALL]
+    predicate:
+      kind: forbidden_when
+      condition: "recipient not in [debtor, guarantor, co_borrower]"
+
+  - id: RBI-FPC-03
+    title: Calamitous-timing suppression
+    source: "RBI expectation of empathy in recovery conduct"
+    severity: HARD
+    applies_to: [SMS_SEND, WHATSAPP_SEND, VOICE_CALL, AGENT_VISIT]
+    predicate:
+      kind: forbidden_when
+      condition: "subject.suppression_flags contains CALAMITOUS_TIMING"
+    note: >
+      Suppresses contact even inside legal hours. Bereavement, medical
+      emergency. This rule exists because someone has to think about it.
+
+  - id: RBI-FPC-04
+    title: Liability rests with the regulated entity regardless of agent or bot
+    source: "RBI instructions to REs on outsourcing and recovery agents"
+    severity: HARD
+    applies_to: [ALL]
+    predicate:
+      kind: requires_state
+      state_path: action.responsible_entity_id
+      required_value: NOT_NULL
+    note: Every audit record must name a responsible entity.
+
+# ─────────────────────────────────────────────────────────────
+# CARD NETWORKS
+# ─────────────────────────────────────────────────────────────
+
+  - id: NET-VISA-01
+    title: Visa Category 1 (never retry) — fee triggers on first reattempt
+    source: "Visa Excessive Reattempts Rule, in effect since Apr 2022"
+    severity: HARD
+    applies_to: [CARD_RETRY]
+    predicate:
+      kind: forbidden_when
+      condition: "decline.visa_category == 1"
+
+  - id: NET-VISA-02
+    title: Cap 15 reattempts per 30 days for Visa Category 2 and 3
+    source: "Visa Excessive Reattempts Rule"
+    severity: HARD
+    applies_to: [CARD_RETRY]
+    predicate:
+      kind: counter_cap
+      counter: card_retries_30d
+      cap: 15
+      scope: [card_id, merchant_id]
+
+  - id: NET-VISA-03
+    title: No decline category code present — default to not retrying
+    source: "Visa default position when category code absent"
+    severity: HARD
+    applies_to: [CARD_RETRY]
+    predicate:
+      kind: forbidden_when
+      condition: "decline.visa_category == null and decline.mac == null"
+    note: Conservative default on ambiguity. Under-confidence never expands permissions.
+
+  - id: NET-MC-01
+    title: MAC 01 — route to payment-update flow, do not retry
+    source: "Mastercard Merchant Advice Codes"
+    severity: HARD
+    applies_to: [CARD_RETRY]
+    predicate:
+      kind: forbidden_when
+      condition: "decline.mac == '01'"
+      rewrite_to: ISSUE_UPDATE_LINK
+    note: Action rewrite, not suppression. The money is still recoverable.
+
+  - id: NET-MC-02
+    title: MAC 02 — retry permitted, max 1/day, max 10 per 30 days
+    source: "Mastercard Merchant Advice Codes; Excessive Attempts programme"
+    severity: HARD
+    applies_to: [CARD_RETRY]
+    predicate:
+      kind: counter_cap
+      counter: card_retries_30d
+      cap: 10
+      also_min_gap_hours: 24
+      condition: "decline.mac == '02'"
+
+  - id: NET-MC-03
+    title: MAC 03 — do not retry; penalty from the first attempt
+    source: "Mastercard Excessive Attempts programme"
+    severity: HARD
+    applies_to: [CARD_RETRY]
+    predicate:
+      kind: forbidden_when
+      condition: "decline.mac == '03'"
+
+  - id: NET-MC-04
+    title: MAC 21 — cardholder cancelled; further attempts non-compliant and futile
+    source: "Mastercard Merchant Advice Codes"
+    severity: HARD
+    applies_to: [CARD_RETRY, MANDATE_RETRY]
+    predicate:
+      kind: forbidden_when
+      condition: "decline.mac == '21'"
+      terminal_state: BUDGET_EXHAUSTED
+
+  - id: NET-SOFT-01
+    title: Soft declines — no sooner than 24h after decline, max 1/day
+    source: "Visa/Mastercard soft decline retry guidance"
+    severity: HARD
+    applies_to: [CARD_RETRY]
+    predicate:
+      kind: min_gap
+      since: last_decline_at
+      min_hours: 24
+
+# ─────────────────────────────────────────────────────────────
+# COMMUNICATION — TRAI / DPDP
+# ─────────────────────────────────────────────────────────────
+
+  - id: TRAI-TIME-01
+    title: Promotional communication permitted only 09:00-21:00
+    source: "TCCCPR 2018 promotional messaging time restrictions"
+    severity: HARD
+    applies_to: [SMS_SEND, WHATSAPP_SEND, VOICE_CALL]
+    predicate:
+      kind: time_window
+      allowed_start: "09:00"
+      allowed_end: "21:00"
+      condition: "message.category == PROMOTIONAL"
+
+  - id: TRAI-DLT-01
+    title: Content must match a registered template exactly
+    source: "TCCCPR 2018; DLT template scrubbing enforced from 01 Feb 2021"
+    severity: HARD
+    applies_to: [SMS_SEND]
+    predicate:
+      kind: requires_state
+      state_path: message.scrub_verdict
+      required_value: PASS
+    note: >
+      THE rule that makes LLM-authored recovery copy impossible in India.
+      The model selects a template ID and fills tagged variables. Nothing else.
+
+  - id: TRAI-DLT-02
+    title: All URLs pre-whitelisted, all variables pre-tagged
+    source: "TRAI CTA whitelisting and variable tagging, mandated 01 Oct 2024"
+    severity: HARD
+    applies_to: [SMS_SEND]
+    predicate:
+      kind: requires_state
+      state_path: message.urls_whitelisted
+      required_value: true
+
+  - id: TRAI-DLT-03
+    title: Header category suffix -P/-S/-T/-G assigned by carrier
+    source: "TRAI header suffix rule effective 06 May 2025"
+    severity: HARD
+    applies_to: [SMS_SEND]
+    predicate:
+      kind: requires_state
+      state_path: message.category
+      required_value: IN [PROMOTIONAL, SERVICE, TRANSACTIONAL, GOVERNMENT]
+    note: Message category determines which templates are reachable.
+
+  - id: TRAI-DND-01
+    title: DND / NCPR scrubbing for promotional traffic
+    source: "TCCCPR 2018 customer preference registry"
+    severity: HARD
+    applies_to: [SMS_SEND, VOICE_CALL]
+    predicate:
+      kind: forbidden_when
+      condition: "subject.dnd_status == REGISTERED and message.category == PROMOTIONAL"
+
+  - id: DPDP-01
+    title: Consent basis documented and current per data principal
+    source: "Digital Personal Data Protection Act, 2023"
+    severity: HARD
+    applies_to: [SMS_SEND, WHATSAPP_SEND, VOICE_CALL]
+    predicate:
+      kind: requires_consent
+      consent_field: communication_consent
+      must_be_current: true
+
+  - id: DPDP-02
+    title: Data minimisation; PII redaction before third-party model calls
+    source: "DPDP Act 2023 purpose limitation and minimisation"
+    severity: HARD
+    applies_to: [LLM_CALL]
+    predicate:
+      kind: requires_state
+      state_path: llm_input.pii_tokenised
+      required_value: true
+
+  # DPDP-03 deliberately omitted: Data residency is a deployment constraint,
+  # not an action predicate. There is no PlannedAction it can evaluate against.
+
+  - id: AI-DISC-01
+    title: AI self-identification at the start of automated voice contact
+    source: "Best practice under RBI conduct rules; verify current status"
+    severity: HARD
+    applies_to: [VOICE_CALL]
+    predicate:
+      kind: requires_precondition
+      prepended_element: AI_DISCLOSURE
+
+# ─────────────────────────────────────────────────────────────
+# RECEIVABLES — MSMED / Income Tax
+# ─────────────────────────────────────────────────────────────
+
+  - id: MSME-43BH-01
+    title: Payment to Udyam-registered micro/small enterprise within 45 days
+    source: "Section 43B(h), Income Tax Act (Finance Act 2023), eff. 01 Apr 2024; MSMED Act s.15"
+    severity: SOFT
+    applies_to: [AR_ESCALATE]
+    predicate:
+      kind: threshold
+      field: days_since_acceptance
+      max: 45
+      fallback_max_without_written_agreement: 15
+    penalty_cost: -2.0   # negative penalty: raises EV, this action is high-value
+    note: >
+      Not a restriction — a LEVER. Buyer loses the income-tax deduction for the
+      year if they miss the line. A reminder stating the exact crossing date is
+      factual, non-coercive, and information the buyer's own finance team wants.
+      This is the highest-EV, lowest-annoyance action in the whole system.
+
+  - id: MSME-16-01
+    title: Compound interest at 3x RBI bank rate on delayed payment, non-deductible
+    source: "MSMED Act 2006, s.16 (interest) and s.23 (non-deductibility)"
+    severity: SOFT
+    applies_to: [AR_ESCALATE]
+    predicate:
+      kind: threshold
+      field: days_overdue
+      min: 1
+    note: >
+      Supplies the quantified cost-of-delay figure to state in the reminder.
+      Verify the current RBI bank rate at build time; do not hardcode.
+
+  - id: MSME-TDS-01
+    title: Buyer-side TDS withholding produces systematic short-payment
+    source: "Income Tax Act TDS provisions (194C/194J/194H/194I)"
+    severity: HARD
+    applies_to: [AR_ESCALATE, AR_REMIND]
+    predicate:
+      kind: forbidden_when
+      condition: "abs(invoice_amount - received_amount - expected_tds) <= 1"
+    note: >
+      The single most relationship-destroying failure in Indian B2B AR:
+      chasing a customer who paid you correctly. Suppress and request Form 16A.
+
+# ─────────────────────────────────────────────────────────────
+# INTERNAL POLICY (not regulatory — your own guardrails)
+# ─────────────────────────────────────────────────────────────
+
+  - id: POL-FATIGUE-01
+    title: Max 3 contacts per subject per rolling 7 days
+    source: "Internal policy"
+    severity: HARD
+    applies_to: [SMS_SEND, WHATSAPP_SEND, VOICE_CALL]
+    predicate:
+      kind: counter_cap
+      counter: contacts_7d
+      cap: 3
+
+  - id: POL-OPTOUT-01
+    title: Opt-out is permanent and terminal
+    source: "Internal policy, stricter than statutory minimum"
+    severity: HARD
+    applies_to: [ALL_CONTACT]
+    predicate:
+      kind: forbidden_when
+      condition: "subject.opted_out == true"
+      terminal_state: OPTED_OUT
+
+  - id: POL-BUDGET-01
+    title: Action cost per case must not exceed 8% of recoverable amount
+    source: "Internal policy"
+    severity: HARD
+    applies_to: [ALL]
+    predicate:
+      kind: threshold
+      field: cumulative_action_cost
+      max_ratio_of: amount_recoverable
+      ratio: 0.08

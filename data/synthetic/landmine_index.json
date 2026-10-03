@@ -1,0 +1,42 @@
+{
+  "duplicate_webhook": [
+    "evt_03501",
+    "evt_03502"
+  ],
+  "payment_settles_before_dispatch": [
+    "evt_03503"
+  ],
+  "opt_out_mid_sequence": [
+    "evt_03504"
+  ],
+  "mandate_revoked_after_first_fail": [
+    "evt_03505"
+  ],
+  "debit_in_peak_window": [
+    "evt_03506"
+  ],
+  "pdn_at_2352": [
+    "evt_03507"
+  ],
+  "afa_amount_raised": [
+    "evt_03508"
+  ],
+  "mac_21_with_attempts": [
+    "evt_03509"
+  ],
+  "tds_short_payment": [
+    "evt_03510"
+  ],
+  "already_paid_hinglish": [
+    "evt_03511"
+  ],
+  "reply_stop": [
+    "evt_03512"
+  ],
+  "calamitous_timing": [
+    "evt_03513"
+  ],
+  "udyam_41_days_old": [
+    "evt_03514"
+  ]
+}

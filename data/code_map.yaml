@@ -1,0 +1,64 @@
+- unified_code: "MAC:05"
+  root_cause: "INSUFFICIENT_FUNDS"
+  permitted_action_classes: ["RETRY", "TOPUP_NUDGE"]
+  confidence: "LOW" # ISO8583 '05' is 'Do Not Honour', which is often broader than just NSF.
+
+- unified_code: "MAC:91"
+  root_cause: "TECHNICAL_DECLINE"
+  permitted_action_classes: ["RETRY_LATER", "SHIFT_SCHEDULE"]
+  confidence: "HIGH"
+
+- unified_code: "MAC:14"
+  root_cause: "MANDATE_NOT_FOUND"
+  permitted_action_classes: ["REQUIRE_NEW_MANDATE"]
+  confidence: "LOW" # ISO8583 '14' is 'Invalid Card Number'. Please verify if Razorpay maps this to mandate issues.
+
+- unified_code: "MAC:54"
+  root_cause: "EXPIRED_CARD"
+  permitted_action_classes: ["UPDATE_CARD", "CONTACT_BUYER"]
+  confidence: "HIGH"
+
+- unified_code: "MAC:AFA"
+  root_cause: "AFA_REQUIRED"
+  permitted_action_classes: ["TRIGGER_AFA_FLOW"]
+  confidence: "HIGH"
+
+- unified_code: "MAC:59"
+  root_cause: "SUSPECTED_FRAUD"
+  permitted_action_classes: ["NO_ACTION"]
+  confidence: "HIGH"
+
+- unified_code: "MAC:21"
+  root_cause: "VELOCITY_LIMIT_EXCEEDED"
+  permitted_action_classes: ["RETRY_LATER"]
+  confidence: "LOW" # ISO8583 '21' is 'No Action Taken'. Verify if this strictly means velocity limits.
+
+- unified_code: "NPCI:REVOKED"
+  root_cause: "MANDATE_REVOKED"
+  permitted_action_classes: ["REQUIRE_NEW_MANDATE"]
+  confidence: "HIGH"
+
+- unified_code: "NETWORK:TIMEOUT"
+  root_cause: "CHECKOUT_TIMEOUT"
+  permitted_action_classes: ["SEND_PAYMENT_LINK"]
+  confidence: "HIGH"
+
+- unified_code: "LEAK:MANDATE_DEBIT_DUE"
+  root_cause: "UPCOMING_DEBIT"
+  permitted_action_classes: ["SCHEDULE_DEBIT", "PREEMPTIVE_NUDGE"]
+  confidence: "HIGH"
+
+- unified_code: "LEAK:INVOICE_OVERDUE"
+  root_cause: "INVOICE_OVERDUE"
+  permitted_action_classes: ["SEND_REMINDER", "ESCALATE"]
+  confidence: "HIGH"
+
+- unified_code: "LEAK:CHECKOUT_ABANDON"
+  root_cause: "ABANDONMENT"
+  permitted_action_classes: ["SEND_PAYMENT_LINK"]
+  confidence: "HIGH"
+
+- unified_code: "LEAK:MANDATE_FAIL"
+  root_cause: "UNKNOWN_DECLINE"
+  permitted_action_classes: ["MANUAL_REVIEW"]
+  confidence: "LOW"

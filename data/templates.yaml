@@ -1,0 +1,14 @@
+templates:
+  - id: "NUDGE_01"
+    category: "service"
+    language: "en"
+    body: "Dear {#var1#}, your scheduled payment of INR {#var2#} for {#var3#} is due on {#var4#}. Please ensure sufficient balance. - Razorpay"
+    whitelisted_urls: []
+    
+  - id: "LINK_01"
+    category: "transactional"
+    language: "en"
+    body: "Your mandate for {#var1#} failed. Tap here to pay via alternate method: {#var2#}"
+    whitelisted_urls:
+      - "rzp.io"
+      - "razorpay.com"

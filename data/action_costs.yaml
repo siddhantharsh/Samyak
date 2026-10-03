@@ -1,0 +1,13 @@
+# Action costs for EV formula (in INR)
+costs:
+  mandate.represent: 3.50
+  message.send: 0.15
+  link.issue: 1.00
+  ar.escalate: 0.00
+  human.handoff: 250.00
+  voice.script: 2.50
+  DO_NOTHING: 0.00
+
+# Penalty amounts for excessive retries (Visa/MC)
+penalties:
+  EXCESSIVE_RETRY: 25.00

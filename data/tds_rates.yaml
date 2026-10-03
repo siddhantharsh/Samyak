@@ -1,0 +1,6 @@
+# WARNING: These rates are for simulation and demo purposes.
+# In a real production system, TDS rates must be verified by human tax/compliance experts.
+"194C": 0.02
+"194J": 0.10
+"194H": 0.05
+"194I": 0.10

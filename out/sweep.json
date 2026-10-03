@@ -1,0 +1,272 @@
+[
+  {
+    "multipliers": {
+      "INSUFFICIENT_FUNDS": 0.6,
+      "TECHNICAL_DECLINE": 0.6,
+      "INVOICE_OVERDUE": 0.6
+    },
+    "holdout_recovered": 210,
+    "samyak_recovered": 300,
+    "uplift": 0.42857142857142855
+  },
+  {
+    "multipliers": {
+      "INSUFFICIENT_FUNDS": 0.6,
+      "TECHNICAL_DECLINE": 0.6,
+      "INVOICE_OVERDUE": 1.0
+    },
+    "holdout_recovered": 253,
+    "samyak_recovered": 354,
+    "uplift": 0.39920948616600793
+  },
+  {
+    "multipliers": {
+      "INSUFFICIENT_FUNDS": 0.6,
+      "TECHNICAL_DECLINE": 0.6,
+      "INVOICE_OVERDUE": 1.4
+    },
+    "holdout_recovered": 275,
+    "samyak_recovered": 376,
+    "uplift": 0.36727272727272725
+  },
+  {
+    "multipliers": {
+      "INSUFFICIENT_FUNDS": 0.6,
+      "TECHNICAL_DECLINE": 1.0,
+      "INVOICE_OVERDUE": 0.6
+    },
+    "holdout_recovered": 302,
+    "samyak_recovered": 365,
+    "uplift": 0.20860927152317882
+  },
+  {
+    "multipliers": {
+      "INSUFFICIENT_FUNDS": 0.6,
+      "TECHNICAL_DECLINE": 1.0,
+      "INVOICE_OVERDUE": 1.0
+    },
+    "holdout_recovered": 337,
+    "samyak_recovered": 409,
+    "uplift": 0.21364985163204747
+  },
+  {
+    "multipliers": {
+      "INSUFFICIENT_FUNDS": 0.6,
+      "TECHNICAL_DECLINE": 1.0,
+      "INVOICE_OVERDUE": 1.4
+    },
+    "holdout_recovered": 362,
+    "samyak_recovered": 441,
+    "uplift": 0.21823204419889503
+  },
+  {
+    "multipliers": {
+      "INSUFFICIENT_FUNDS": 0.6,
+      "TECHNICAL_DECLINE": 1.4,
+      "INVOICE_OVERDUE": 0.6
+    },
+    "holdout_recovered": 342,
+    "samyak_recovered": 355,
+    "uplift": 0.038011695906432746
+  },
+  {
+    "multipliers": {
+      "INSUFFICIENT_FUNDS": 0.6,
+      "TECHNICAL_DECLINE": 1.4,
+      "INVOICE_OVERDUE": 1.0
+    },
+    "holdout_recovered": 379,
+    "samyak_recovered": 398,
+    "uplift": 0.05013192612137203
+  },
+  {
+    "multipliers": {
+      "INSUFFICIENT_FUNDS": 0.6,
+      "TECHNICAL_DECLINE": 1.4,
+      "INVOICE_OVERDUE": 1.4
+    },
+    "holdout_recovered": 407,
+    "samyak_recovered": 409,
+    "uplift": 0.004914004914004914
+  },
+  {
+    "multipliers": {
+      "INSUFFICIENT_FUNDS": 1.0,
+      "TECHNICAL_DECLINE": 0.6,
+      "INVOICE_OVERDUE": 0.6
+    },
+    "holdout_recovered": 229,
+    "samyak_recovered": 342,
+    "uplift": 0.49344978165938863
+  },
+  {
+    "multipliers": {
+      "INSUFFICIENT_FUNDS": 1.0,
+      "TECHNICAL_DECLINE": 0.6,
+      "INVOICE_OVERDUE": 1.0
+    },
+    "holdout_recovered": 259,
+    "samyak_recovered": 376,
+    "uplift": 0.4517374517374517
+  },
+  {
+    "multipliers": {
+      "INSUFFICIENT_FUNDS": 1.0,
+      "TECHNICAL_DECLINE": 0.6,
+      "INVOICE_OVERDUE": 1.4
+    },
+    "holdout_recovered": 314,
+    "samyak_recovered": 420,
+    "uplift": 0.3375796178343949
+  },
+  {
+    "multipliers": {
+      "INSUFFICIENT_FUNDS": 1.0,
+      "TECHNICAL_DECLINE": 1.0,
+      "INVOICE_OVERDUE": 0.6
+    },
+    "holdout_recovered": 340,
+    "samyak_recovered": 413,
+    "uplift": 0.21470588235294116
+  },
+  {
+    "multipliers": {
+      "INSUFFICIENT_FUNDS": 1.0,
+      "TECHNICAL_DECLINE": 1.0,
+      "INVOICE_OVERDUE": 1.0
+    },
+    "holdout_recovered": 374,
+    "samyak_recovered": 448,
+    "uplift": 0.19786096256684493
+  },
+  {
+    "multipliers": {
+      "INSUFFICIENT_FUNDS": 1.0,
+      "TECHNICAL_DECLINE": 1.0,
+      "INVOICE_OVERDUE": 1.4
+    },
+    "holdout_recovered": 401,
+    "samyak_recovered": 482,
+    "uplift": 0.20199501246882792
+  },
+  {
+    "multipliers": {
+      "INSUFFICIENT_FUNDS": 1.0,
+      "TECHNICAL_DECLINE": 1.4,
+      "INVOICE_OVERDUE": 0.6
+    },
+    "holdout_recovered": 372,
+    "samyak_recovered": 397,
+    "uplift": 0.06720430107526881
+  },
+  {
+    "multipliers": {
+      "INSUFFICIENT_FUNDS": 1.0,
+      "TECHNICAL_DECLINE": 1.4,
+      "INVOICE_OVERDUE": 1.0
+    },
+    "holdout_recovered": 423,
+    "samyak_recovered": 433,
+    "uplift": 0.02364066193853428
+  },
+  {
+    "multipliers": {
+      "INSUFFICIENT_FUNDS": 1.0,
+      "TECHNICAL_DECLINE": 1.4,
+      "INVOICE_OVERDUE": 1.4
+    },
+    "holdout_recovered": 427,
+    "samyak_recovered": 483,
+    "uplift": 0.13114754098360656
+  },
+  {
+    "multipliers": {
+      "INSUFFICIENT_FUNDS": 1.4,
+      "TECHNICAL_DECLINE": 0.6,
+      "INVOICE_OVERDUE": 0.6
+    },
+    "holdout_recovered": 283,
+    "samyak_recovered": 358,
+    "uplift": 0.26501766784452296
+  },
+  {
+    "multipliers": {
+      "INSUFFICIENT_FUNDS": 1.4,
+      "TECHNICAL_DECLINE": 0.6,
+      "INVOICE_OVERDUE": 1.0
+    },
+    "holdout_recovered": 316,
+    "samyak_recovered": 446,
+    "uplift": 0.41139240506329117
+  },
+  {
+    "multipliers": {
+      "INSUFFICIENT_FUNDS": 1.4,
+      "TECHNICAL_DECLINE": 0.6,
+      "INVOICE_OVERDUE": 1.4
+    },
+    "holdout_recovered": 342,
+    "samyak_recovered": 446,
+    "uplift": 0.30409356725146197
+  },
+  {
+    "multipliers": {
+      "INSUFFICIENT_FUNDS": 1.4,
+      "TECHNICAL_DECLINE": 1.0,
+      "INVOICE_OVERDUE": 0.6
+    },
+    "holdout_recovered": 361,
+    "samyak_recovered": 446,
+    "uplift": 0.23545706371191136
+  },
+  {
+    "multipliers": {
+      "INSUFFICIENT_FUNDS": 1.4,
+      "TECHNICAL_DECLINE": 1.0,
+      "INVOICE_OVERDUE": 1.0
+    },
+    "holdout_recovered": 414,
+    "samyak_recovered": 495,
+    "uplift": 0.1956521739130435
+  },
+  {
+    "multipliers": {
+      "INSUFFICIENT_FUNDS": 1.4,
+      "TECHNICAL_DECLINE": 1.0,
+      "INVOICE_OVERDUE": 1.4
+    },
+    "holdout_recovered": 420,
+    "samyak_recovered": 546,
+    "uplift": 0.3
+  },
+  {
+    "multipliers": {
+      "INSUFFICIENT_FUNDS": 1.4,
+      "TECHNICAL_DECLINE": 1.4,
+      "INVOICE_OVERDUE": 0.6
+    },
+    "holdout_recovered": 411,
+    "samyak_recovered": 435,
+    "uplift": 0.058394160583941604
+  },
+  {
+    "multipliers": {
+      "INSUFFICIENT_FUNDS": 1.4,
+      "TECHNICAL_DECLINE": 1.4,
+      "INVOICE_OVERDUE": 1.0
+    },
+    "holdout_recovered": 442,
+    "samyak_recovered": 475,
+    "uplift": 0.0746606334841629
+  },
+  {
+    "multipliers": {
+      "INSUFFICIENT_FUNDS": 1.4,
+      "TECHNICAL_DECLINE": 1.4,
+      "INVOICE_OVERDUE": 1.4
+    },
+    "holdout_recovered": 475,
+    "samyak_recovered": 503,
+    "uplift": 0.05894736842105263
+  }
+]

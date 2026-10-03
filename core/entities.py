@@ -61,6 +61,7 @@ class Subject(BaseModel):
 class Layer(str, Enum):
     L1_DETERMINISTIC = "L1_DETERMINISTIC"
     L2_INFERRED = "L2_INFERRED"
+    UNRESOLVED = "UNRESOLVED"
 
 class Diagnosis(BaseModel):
     root_cause: str
@@ -86,11 +87,11 @@ class PlannedAction(BaseModel):
     precondition_step_ids: List[str]
 
 class ActionPlan(BaseModel):
-    steps: List[PlannedAction]
+    steps: List[PlannedAction] = []
     feasible: bool
-    binding_constraints: List[str]
-    ev_net: Decimal
-    solver_stats: Dict[str, Any]
+    binding_constraints: List[str] = []
+    ev_net: Optional[Decimal] = None
+    solver_stats: Optional[Dict[str, Any]] = None
 
 class Arm(str, Enum):
     TREATMENT = "TREATMENT"
